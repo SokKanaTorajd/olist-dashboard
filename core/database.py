@@ -1,3 +1,5 @@
+"""Cached, read-only DuckDB connection for the Streamlit application."""
+
 from pathlib import Path
 
 import duckdb

@@ -1,3 +1,5 @@
+"""Product-sales, freight, payment-method, and regional-sales dashboard."""
+
 import streamlit as st
 import plotly.express as px
 from core.metrics import financial

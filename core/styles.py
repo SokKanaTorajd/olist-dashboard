@@ -1,3 +1,5 @@
+"""Shared CSS styling for the Olist dashboard."""
+
 import streamlit as st
 
 

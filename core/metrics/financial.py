@@ -1,6 +1,11 @@
-"""Sales and basket measures; product sales exclude shipping charges."""
+"""Product GMV, order volume, payment mix, and buyer-region analytics.
+
+Product sales exclude freight; payment values can include additional charges.
+The order and item facts are aggregated separately to prevent fan-out.
+"""
 
 def overview(con, filters):
+    """Return shared order- and item-grain KPIs under global filters."""
     order_where, op = filters.where('o')
     item_where, ip = filters.where('f')
     orders = con.execute(f'''SELECT COUNT(*) AS total_orders,
@@ -24,6 +29,7 @@ def overview(con, filters):
 
 
 def monthly_sales(con, filters):
+    """Aggregate product GMV by order purchase month."""
     where, params = filters.where('f')
     return con.execute(f'''SELECT STRFTIME(purchase_timestamp,'%Y-%m') AS month,
         ROUND(SUM(price),2) AS gmv FROM fact_order_items f {where}
@@ -31,6 +37,7 @@ def monthly_sales(con, filters):
 
 
 def top_categories(con, filters):
+    """Return the ten product categories with highest filtered GMV."""
     where, params = filters.where('f')
     return con.execute(f'''SELECT COALESCE(product_category,'Unknown') AS category,
         ROUND(SUM(price),2) AS total_gmv FROM fact_order_items f {where}
@@ -38,6 +45,7 @@ def top_categories(con, filters):
 
 
 def payment_methods(con, filters):
+    """Aggregate payment value and distinct orders by payment type."""
     where, params = filters.where('o')
     return con.execute(f'''SELECT p.payment_type,
         COUNT(DISTINCT p.order_id) AS total_orders,
@@ -47,6 +55,7 @@ def payment_methods(con, filters):
 
 
 def installments(con, filters):
+    """Count distinct orders by positive installment count."""
     where, params = filters.where('o')
     return con.execute(f'''SELECT p.payment_installments,
         COUNT(DISTINCT p.order_id) AS total_orders
@@ -56,6 +65,7 @@ def installments(con, filters):
 
 
 def regional_sales(con, filters):
+    """Rank buyer states by product GMV and distinct orders."""
     where, params = filters.where('f')
     return con.execute(f'''SELECT f.customer_state,
         COUNT(DISTINCT f.order_id) AS total_orders,

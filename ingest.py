@@ -1,13 +1,18 @@
+"""Load downloaded Olist CSV files into source tables in a local DuckDB database.
+
+Update DATA_DIR before running. Existing matching source tables are replaced;
+missing files are reported and skipped, so inspect the console output.
+"""
 import duckdb
 import os
 
-# Path lokasi folder dataset kamu di Downloads (menggunakan raw string r"...")
+# Local directory containing the downloaded Olist CSV files; update for your machine.
 DATA_DIR = r"C:\Users\user\Downloads\Olist_ecommerce_dataset"
 
-# Lokasi file database DuckDB yang akan dibuat di folder projek
+# Output database in the project root.
 DB_PATH = "olist.duckdb"
 
-# Pemetaan nama tabel DuckDB -> nama file CSV (lengkap sesuai foto)
+# Map source table names to the original Kaggle CSV filenames.
 tables = {
     "orders": "olist_orders_dataset.csv",
     "order_items": "olist_order_items_dataset.csv",
@@ -27,7 +32,7 @@ for table_name, csv_filename in tables.items():
     csv_path = os.path.join(DATA_DIR, csv_filename)
     
     if os.path.exists(csv_path):
-        # Mengubah backslash Windows (\) jadi forward slash (/) agar aman di query DuckDB
+        # Normalize Windows path separators before using the CSV path in DuckDB SQL.
         safe_path = csv_path.replace("\\", "/")
         con.execute(f"CREATE OR REPLACE TABLE {table_name} AS SELECT * FROM '{safe_path}'")
         print(f"✅ Tabel '{table_name}' berhasil dibuat!")
