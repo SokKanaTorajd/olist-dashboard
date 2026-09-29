@@ -48,3 +48,27 @@ Streamlit + DuckDB analytics for the [Olist Brazilian E-Commerce Public Dataset]
 ## Validation
 
 Run `python -m compileall -q app.py build_facts.py core tabs` to check Python syntax. Compare outputs with your manual DuckDB queries before treating the dashboard as validated. The SQL uses DuckDB `?` parameters instead of interpolating selected filter values.
+
+## Phase 3: Historical Time Intelligence
+
+- Added **Time Intelligence** tab and `core/metrics/time_intelligence.py` with Sales MTD, same-period-last-year MTD, MTD YoY growth, Sales YTD, same-period-last-year YTD, YTD YoY growth, and monthly GMV comparison.
+- Reporting **as-of date** defaults to the latest purchase date in the currently filtered `fact_order_items`, not today's date. Choose an earlier date in the tab to explore historical snapshots.
+- Product GMV is `SUM(fact_order_items.price)`, filtered by global order status and buyer state, and attributed to the **purchase date**. It excludes freight and refunds and is not Olist's recognized platform revenue.
+- LY compares the same calendar start/end dates in the prior year (Feb 29 maps to Feb 28). Growth is unavailable (`N/A`) if the prior-year comparison window is outside the filtered dataset's observed date range or if prior-year sales are zero. Coverage by min/max dates is not proof that every intervening date has records.
+- The monthly chart shows calendar-month aggregates for the selected and prior year. The current as-of month can be partial; **use MTD KPIs, not the monthly chart, for aligned same-period growth**.
+- No fact-table schema change is needed for Phase 3. Keep Phase 2's `build_facts.py` and existing fact tables; no rebuild is required if Phase 2 is already installed.
+- This release has static validation only. Manual SQL comparisons and end-to-end testing are deferred until all phases are implemented.
+
+### Branch workflow
+
+```bash
+git switch dev
+git pull origin dev
+git switch -c feature/time-intelligence
+# Copy the updated Phase 3 files, then:
+git add app.py core/metrics/time_intelligence.py tabs/time_intelligence.py README.md
+git commit -m "feat(analytics): add historical sales time intelligence"
+git push -u origin feature/time-intelligence
+```
+
+Open a PR from `feature/time-intelligence` into `dev`. After manual validation, merge `dev` into `main` through a separate PR.
