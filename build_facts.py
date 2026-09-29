@@ -24,10 +24,12 @@ with duckdb.connect(str(DB_PATH)) as con:
         SELECT i.order_id, i.order_item_id, i.product_id, i.seller_id,
             o.customer_id, c.customer_state,
             COALESCE(t.product_category_name_english,p.product_category_name) AS product_category,
+            s.seller_state, s.seller_city,
             i.price, i.freight_value, o.order_status,
             TRY_CAST(o.order_purchase_timestamp AS TIMESTAMP) AS purchase_timestamp
         FROM order_items i JOIN orders o ON i.order_id=o.order_id
         LEFT JOIN customers c ON o.customer_id=c.customer_id
+        LEFT JOIN sellers s ON i.seller_id=s.seller_id
         LEFT JOIN products p ON i.product_id=p.product_id
         LEFT JOIN product_category_translation t
             ON p.product_category_name=t.product_category_name''')

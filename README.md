@@ -1,4 +1,4 @@
-# Olist E-Commerce Analytics Dashboard — Phase 1
+# Olist E-Commerce Analytics Dashboard — Phase 2
 
 Streamlit + DuckDB analytics for the [Olist Brazilian E-Commerce Public Dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
 
@@ -7,9 +7,19 @@ Streamlit + DuckDB analytics for the [Olist Brazilian E-Commerce Public Dataset]
 1. Download the Kaggle CSVs and put them in the directory expected by your existing `ingest.py` (keep your existing ingest script; it is not included in this update).
 2. Install dependencies: `pip install streamlit duckdb pandas plotly`.
 3. From the project root, run `python ingest.py`, then `python build_facts.py`, then `streamlit run app.py`.
-4. Copy this package's `app.py`, `build_facts.py`, `core/`, and four business tabs into your project. Keep your existing `tabs/explorer.py` if customized; a copy is included for convenience.
+4. Copy this package's `app.py`, `build_facts.py`, `core/`, and five business tabs into your project. Keep your existing `tabs/explorer.py` if customized; a copy is included for convenience.
 
 `build_facts.py` rebuilds all four fact tables. Run it while the Streamlit application is stopped so the DuckDB file is not held open by its read-only connection.
+
+## Phase 2: Marketplace & Seller Analytics
+
+- Added **Marketplace & Sellers** tab with active sellers, average product GMV per seller, top-10 seller concentration, highest seller concentration, top seller ranking and seller-state sales.
+- **Seller segments** are dynamically recalculated product-GMV quartiles under the current order-status and buyer-state filters; they are not supplied business classifications. A segment contains roughly one-quarter of the filtered active sellers, not one-quarter of GMV.
+- `fact_order_items` now includes `seller_state` and `seller_city` from the original `sellers` table. Rebuild facts after copying this release.
+- Top-10 seller share = GMV from the ten largest sellers / total seller-attributed GMV. Average sales per seller = seller-attributed GMV / active sellers.
+- Buyer-state global filters remain based on **customer_state**; seller-state charts show **seller_state**.
+- This phase adds no `dim_seller` or external seller classification. If an official segment mapping becomes available, replace the derived quartiles.
+- No end-to-end database validation has been performed; follow up with manual SQL comparisons after Phase 3.
 
 ## Structure
 
@@ -17,6 +27,7 @@ Streamlit + DuckDB analytics for the [Olist Brazilian E-Commerce Public Dataset]
 - `core/metrics/financial.py`: product sales, AOV, basket size, freight, payments and region/category trends.
 - `core/metrics/operations.py`: order-grain delivery SLAs and item-grain freight.
 - `core/metrics/customer.py`: review KPIs and delivery impact.
+- `core/metrics/seller.py`: seller ranking, dynamic quartiles, concentration and geography.
 - `tabs/`: Streamlit presentation layer. `explorer.py` keeps its independent data-source filters.
 
 ## Metric definitions and limitations
