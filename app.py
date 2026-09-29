@@ -1,3 +1,5 @@
+"""Streamlit application entry point and seven-tab dashboard navigation."""
+
 import streamlit as st
 from core.database import get_db_connection
 from core.filters import render_global_filters
@@ -13,7 +15,7 @@ filters = render_global_filters(con)
 
 tab_exec, tab_fin, tab_ops, tab_cx, tab_seller, tab_time, tab_explorer = st.tabs([
     '🏛️ Executive Overview', '💳 Revenue & Payments', '🚚 Operations & Logistics',
-    '⭐ Customer Experience', '🏪 Marketplace & Sellers', '🔎 Data Explorer'])
+    '⭐ Customer Experience', '🏪 Marketplace & Sellers', '⏰ Time Intelligence', '🔎 Data Explorer'])
 with tab_exec:
     executive.render(con, filters)
 with tab_fin:

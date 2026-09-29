@@ -1,6 +1,7 @@
 """Order-grain delivery SLAs and item-grain shipping measures."""
 
 def delivery_kpis(con, filters):
+    """Calculate delivered-order SLAs; exclude missing estimates from the delay denominator."""
     where, params = filters.where('o')
     row = con.execute(f'''SELECT ROUND(AVG(delivery_days),1) AS avg_delivery_days,
         COUNT(*) AS delivered_orders,
@@ -15,6 +16,7 @@ def delivery_kpis(con, filters):
 
 
 def item_kpis(con, filters):
+    """Calculate item-level freight and delivered-status fulfilled-item proxy."""
     where, params = filters.where('f')
     row = con.execute(f'''SELECT ROUND(AVG(f.freight_value),2) AS avg_freight,
         COUNT(*) FILTER (WHERE f.order_status='delivered') AS fulfilled_items
@@ -23,6 +25,7 @@ def item_kpis(con, filters):
 
 
 def regional_freight(con, filters):
+    """Compare average item price and freight billed by buyer state."""
     where, params = filters.where('f')
     return con.execute(f'''SELECT f.customer_state,
         ROUND(AVG(f.price),2) AS avg_product_price,

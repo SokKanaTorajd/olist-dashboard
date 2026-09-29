@@ -1,3 +1,5 @@
+"""Customer satisfaction and delivery-versus-rating dashboard."""
+
 import streamlit as st
 import plotly.express as px
 from core.metrics import customer

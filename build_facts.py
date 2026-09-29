@@ -11,6 +11,8 @@ if not DB_PATH.exists():
 
 with duckdb.connect(str(DB_PATH)) as con:
     print('Building Olist analytical fact tables...')
+    
+    # Order grain: preserve orders without matching customer attributes.
     con.execute('''CREATE OR REPLACE TABLE fact_orders AS
         SELECT o.order_id, o.customer_id, c.customer_unique_id,
             c.customer_state, c.customer_city, o.order_status,
@@ -20,6 +22,8 @@ with duckdb.connect(str(DB_PATH)) as con:
             DATE_DIFF('day', TRY_CAST(o.order_purchase_timestamp AS TIMESTAMP),
                       TRY_CAST(o.order_delivered_customer_date AS TIMESTAMP)) AS delivery_days
         FROM orders o LEFT JOIN customers c ON o.customer_id = c.customer_id''')
+    
+    # Item grain: enrich each line with product category and seller geography.
     con.execute('''CREATE OR REPLACE TABLE fact_order_items AS
         SELECT i.order_id, i.order_item_id, i.product_id, i.seller_id,
             o.customer_id, c.customer_state,
@@ -33,12 +37,16 @@ with duckdb.connect(str(DB_PATH)) as con:
         LEFT JOIN products p ON i.product_id=p.product_id
         LEFT JOIN product_category_translation t
             ON p.product_category_name=t.product_category_name''')
+    
+    # Payment grain: preserve multiple payment records for the same order.
     con.execute('''CREATE OR REPLACE TABLE fact_payments AS
         SELECT p.order_id,p.payment_sequential,p.payment_type,p.payment_installments,
             p.payment_value,o.customer_id,c.customer_state,
             TRY_CAST(o.order_purchase_timestamp AS TIMESTAMP) AS purchase_timestamp
         FROM order_payments p JOIN orders o ON p.order_id=o.order_id
         LEFT JOIN customers c ON o.customer_id=c.customer_id''')
+    
+    # Review grain: retain review records separately from order-item counts.
     con.execute('''CREATE OR REPLACE TABLE fact_reviews AS
         SELECT r.review_id,r.order_id,r.review_score,r.review_comment_title,
             r.review_comment_message,

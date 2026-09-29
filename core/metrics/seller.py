@@ -2,6 +2,7 @@
 
 
 def seller_kpis(con, filters):
+    """Aggregate product GMV by non-null seller and calculate concentration."""
     where, params = filters.where('f')
     row = con.execute(f"""WITH seller_sales AS (
         SELECT f.seller_id, SUM(f.price) AS sales
@@ -20,6 +21,7 @@ def seller_kpis(con, filters):
 
 
 def top_sellers(con, filters, limit=10):
+    """Rank sellers by filtered product GMV, including item and order counts."""
     where, params = filters.where('f')
     return con.execute(f"""SELECT f.seller_id,
         ANY_VALUE(f.seller_state) AS seller_state,
@@ -57,6 +59,7 @@ def seller_segments(con, filters):
 
 
 def seller_geography(con, filters, limit=10):
+    """Aggregate seller-attributed GMV and seller counts by seller state."""
     where, params = filters.where('f')
     return con.execute(f"""SELECT COALESCE(f.seller_state,'Unknown') AS seller_state,
         COUNT(DISTINCT f.seller_id) AS active_sellers,
@@ -67,6 +70,7 @@ def seller_geography(con, filters, limit=10):
 
 
 def concentration(con, filters):
+    """Calculate the ten highest-GMV sellers’ share of seller-attributed GMV."""
     """Top 10 seller share of seller-attributed sales, including tied order IDs once per seller."""
     where, params = filters.where('f')
     row = con.execute(f"""WITH seller_sales AS (
