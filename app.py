@@ -2,7 +2,7 @@ import streamlit as st
 from core.database import get_db_connection
 from core.filters import render_global_filters
 from core.styles import apply_styles
-from tabs import customer, executive, explorer, finance, operations, seller
+from tabs import customer, executive, explorer, operations, revenue, seller
 
 st.set_page_config(page_title='Olist Data Explorer', page_icon='🛍️', layout='wide')
 apply_styles()
@@ -12,12 +12,12 @@ st.caption('Multi-Perspective Enterprise Analytics powered by DuckDB & Streamlit
 filters = render_global_filters(con)
 
 tab_exec, tab_fin, tab_ops, tab_cx, tab_seller, tab_explorer = st.tabs([
-    '🏛️ Executive Overview', '💳 Finance & Marketing', '🚚 Operations & Logistics',
+    '🏛️ Executive Overview', '💳 Revenue & Payments', '🚚 Operations & Logistics',
     '⭐ Customer Experience', '🏪 Marketplace & Sellers', '🔎 Data Explorer'])
 with tab_exec:
     executive.render(con, filters)
 with tab_fin:
-    finance.render(con, filters)
+    revenue.render(con, filters)
 with tab_ops:
     operations.render(con, filters)
 with tab_cx:
